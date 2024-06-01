@@ -1,0 +1,11 @@
+---------------------------------------------------------------------------------------------------
+Version: 0.1.1
+Date: 2024.05.31
+  Changes:
+    - Added startup settings for positive/negative bonuses so functionality can be limited to either efficiency or speed modules
+    - Added logic to prevent extra entities from being created for modded beacons which don't function with this mod
+---------------------------------------------------------------------------------------------------
+Version: 0.1.0
+Date: 2024.05.30
+  Changes:
+    - Initial Release
