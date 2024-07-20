@@ -32,11 +32,12 @@ local BEACONS_TO_SKIP = { -- these currently don't work with modular power due t
     "ei_copper-beacon", "ei_iron-beacon", "ei_alien-beacon",
     "el_ki_beacon_entity", "fi_ki_beacon_entity", "fu_ki_beacon_entity",
     "el_ki_core_slave_entity", "fi_ki_core_slave_entity", "fu_ki_core_slave_entity",
+    "cube-beacon",
     "warptorio-beacon-1", "warptorio-beacon-2", "warptorio-beacon-3", "warptorio-beacon-4", "warptorio-beacon-5",
     "warptorio-beacon-6", "warptorio-beacon-7", "warptorio-beacon-8", "warptorio-beacon-9", "warptorio-beacon-10"
 }
 local startup = settings.startup
-POWER_MINIMUM = tonumber(math.floor(math.ceil(startup["mbp-power-minimum"].value*1000)/100)/10) or 0.2
+POWER_MINIMUM = tonumber(math.floor(math.ceil(startup["mbp-power-minimum"].value*1000)/50)/10)/2 or 0.2 -- rounded to nearest 5%
 local apply_efficiency = startup["mbp-apply-efficiency"].value
 local skip_beacons = startup["mbp-skip-beacons"].value
 local positive_bonuses = startup["mbp-positive-bonuses"].value
@@ -109,6 +110,7 @@ function is_valid(beacon)
     if not consumption then return false end
     if get_energy_value(beacon.energy_usage) == 0 then return false end
     if beacon.module_specification == nil or beacon.module_specification.module_slots == 0 then return false end
+    -- TODO: selectable? some beacons have modules automatically inserted into them and cannot be changed, so their power requirements are likely balanced around their static effect
     return true
 end
 
@@ -128,6 +130,7 @@ for _, beacon in pairs(data.raw.beacon) do
         if prod_consumption == 2 then include_prod_modules = true end
     end
 end
+-- TODO: Add "tags" to values from prod modules, so that the combined values can have the same tags and only apply to beacons which can use prod modules? Same concept could apply to other module effects
 
 -- Create list of unique power consumption values from individual modules
 local module_powers = {}
@@ -179,6 +182,7 @@ for name, beacon in pairs(data.raw.beacon) do
         if beacon.fast_replaceable_group == nil then beacon.fast_replaceable_group = beacon.name end
     end
 end
+--new_beacon = table.sort(new_beacon)
 
 -- Creates new beacons with adjusted power requirements
 for _, info in pairs(new_beacons) do

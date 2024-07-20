@@ -51,7 +51,7 @@ end
 
 --- Loads stored data and starts scripts
 function startup()
-  POWER_MINIMUM = tonumber(math.floor(math.ceil(settings.startup["mbp-power-minimum"].value*1000)/100)/10) or 0.2
+  POWER_MINIMUM = tonumber(math.floor(math.ceil(settings.startup["mbp-power-minimum"].value*1000)/50)/10)/2 or 0.2 -- rounded to nearest 5%
   apply_efficiency = settings.startup["mbp-apply-efficiency"].value
   bonuses = { negative = settings.startup["mbp-negative-bonuses"].value, positive = settings.startup["mbp-positive-bonuses"].value }
   update_rate = settings.global["mbp-update-rate"].value

@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.1.2
+Date: 2024.07.20
+  Changes:
+    - Added a startup setting to determine whether a beacon's distribution efficiency also applies to internal module effects
+---------------------------------------------------------------------------------------------------
 Version: 0.1.1
 Date: 2024.05.31
   Changes:
