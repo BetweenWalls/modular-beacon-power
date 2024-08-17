@@ -23,23 +23,23 @@ data:extend ({
     },
     {
         type = "bool-setting",
-        name = "mbp-apply-efficiency",
-        setting_type = "startup",
-        default_value = false,
-        order = "a"
-    },
-    {
-        type = "bool-setting",
         name = "mbp-negative-bonuses",
         setting_type = "startup",
         default_value = true,
-        order = "b"
+        order = "a"
     },
     {
         type = "bool-setting",
         name = "mbp-positive-bonuses",
         setting_type = "startup",
-        default_value = true,
+        default_value = false,
+        order = "b"
+    },
+    {
+        type = "bool-setting",
+        name = "mbp-apply-efficiency",
+        setting_type = "startup",
+        default_value = false,
         order = "c"
     },
     -- TODO: Add setting which changes negative bonuses (eg. from efficiency modules) to be multiplicative instead of additive?

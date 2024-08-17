@@ -1,6 +1,6 @@
 {
 	"name": "modular-beacon-power",
-	"version": "0.1.2",
+	"version": "0.1.3",
 	"title": "Modular Beacon Power",
 	"author": "BetweenWalls",
 	"contact": "Discord: @between_walls",
@@ -8,5 +8,5 @@
 	"dependencies": [
 		"base"
 	],
-	"description": "Beacons are affected by their own modules."
+	"description": "Beacons are affected by their own modules. They use less power with efficiency modules and/or more power with speed modules - settings control whether the mod applies to both or just one or the other."
 }

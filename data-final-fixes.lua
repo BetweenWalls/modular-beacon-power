@@ -195,3 +195,4 @@ for _, info in pairs(new_beacons) do
     if info.description then new_beacon.localised_description = info.description end
     data:extend({new_beacon})
 end
+-- TODO: Set a limit for how many entities should be created? If other mods add many beacons and modules, the potential number of combinations can become so great that the game "hangs" when loading (due to insufficient memory, presumably)

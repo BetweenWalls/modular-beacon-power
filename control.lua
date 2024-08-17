@@ -29,6 +29,7 @@ script.on_configuration_changed(
   function()
     initialize()
     startup()
+    -- TODO: why is check_all_beacons() not needed here?
   end
 )
 
