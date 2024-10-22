@@ -109,7 +109,7 @@ function is_valid(beacon)
     end
     if not consumption then return false end
     if get_energy_value(beacon.energy_usage) == 0 then return false end
-    if beacon.module_specification == nil or beacon.module_specification.module_slots == 0 then return false end
+    if beacon.module_slots == 0 then return false end
     -- TODO: selectable? some beacons have modules automatically inserted into them and cannot be changed, so their power requirements are likely balanced around their static effect
     return true
 end
@@ -119,7 +119,7 @@ local max_slots = 0
 local min_eff = 100
 local include_prod_modules = false
 for _, beacon in pairs(data.raw.beacon) do
-    local slots = beacon.module_specification.module_slots or 0
+    local slots = beacon.module_slots or 0
     if slots > max_slots then max_slots = slots end
     if beacon.distribution_effectivity < min_eff then min_eff = beacon.distribution_effectivity end
     if beacon.allowed_effects then
@@ -135,9 +135,9 @@ end
 -- Create list of unique power consumption values from individual modules
 local module_powers = {}
 for _, module in pairs(data.raw.module) do
-    if module.effect.consumption and module.effect.consumption.bonus and module.effect.consumption.bonus ~= 0 then
+    if module.effect.consumption and module.effect.consumption ~= 0 then
         if module.effect.productivity == nil or include_prod_modules then
-            local bonus = module.effect.consumption.bonus
+            local bonus = module.effect.consumption
             if ((positive_bonuses or bonus < 0) and (negative_bonuses or bonus > 0)) then
                 table.insert(module_powers, bonus)
             end
@@ -167,7 +167,7 @@ end
 local new_beacons = {}
 BEACONS_TO_SKIP = key_list(BEACONS_TO_SKIP)
 for name, beacon in pairs(data.raw.beacon) do
-    local slots = beacon.module_specification.module_slots or 0
+    local slots = beacon.module_slots or 0
     if is_valid(beacon) and combos[slots] then
         local power = get_energy_value(beacon.energy_usage)
         local new_name = beacon.localised_name or {"entity-name."..name} or {"item-name."..name} or {"name."..name}
@@ -191,6 +191,7 @@ for _, info in pairs(new_beacons) do
     new_beacon.energy_usage = info.energy.."W"
     new_beacon.placeable_by = {item = new_beacon.minable.result or new_beacon.minable.results[1].name, count = 1}
     new_beacon.next_upgrade = nil
+    new_beacon.hidden = true
     if info.name then new_beacon.localised_name = info.name end
     if info.description then new_beacon.localised_description = info.description end
     data:extend({new_beacon})

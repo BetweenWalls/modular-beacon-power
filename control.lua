@@ -14,7 +14,7 @@ local iterator = 1         -- keeps track of current position within beacon_queu
 
 script.on_init(
   function()
-    global = { mpb = {}, beff = {}, beacons = {}, queue = {} }
+    storage = { mpb = {}, beff = {}, beacons = {}, queue = {} }
     initialize()
     startup()
     check_all_beacons()
@@ -35,19 +35,21 @@ script.on_configuration_changed(
 
 --- Saves module/beacon prototype & entity data
 function initialize()
-  local module_prototypes = game.get_filtered_item_prototypes({{filter = "type", type = "module"}})
+  --local module_prototypes = game.get_filtered_item_prototypes({{filter = "type", type = "module"}})
+  local module_prototypes = prototypes.get_item_filtered({{filter = "type", type = "module"}})
   for module_name, module in pairs(module_prototypes) do
     local power_bonus = 0
-    if module.module_effects and module.module_effects.consumption and module.module_effects.consumption.bonus then power_bonus = module.module_effects.consumption.bonus end
-    global.mpb[module_name] = power_bonus
+    if module.module_effects and module.module_effects.consumption then power_bonus = module.module_effects.consumption end
+    storage.mpb[module_name] = power_bonus
   end
-  local beacon_prototypes = game.get_filtered_entity_prototypes({{filter = "type", type = "beacon"}})
+  --local beacon_prototypes = game.get_filtered_entity_prototypes({{filter = "type", type = "beacon"}})
+  local beacon_prototypes = prototypes.get_entity_filtered({{filter = "type", type = "beacon"}})
   for beacon_name, beacon in pairs(beacon_prototypes) do
-    global.beff[beacon_name] = beacon.distribution_effectivity
+    storage.beff[beacon_name] = beacon.distribution_effectivity
   end
   local info = catalogue_all_beacons()
-  global.beacons = info[1]
-  global.queue = info[2]
+  storage.beacons = info[1]
+  storage.queue = info[2]
 end
 
 --- Loads stored data and starts scripts
@@ -59,16 +61,16 @@ function startup()
   active_mod = settings.global["mbp-active-mod"].value
   update_rate = settings.global["mbp-update-rate"].value
   active_mod = settings.global["mbp-active-mod"].value
-  module_power_bonuses = global.mpb
-  beacon_efficiencies = global.beff
-  all_beacons = global.beacons
-  beacon_queue = global.queue
+  module_power_bonuses = storage.mpb
+  beacon_efficiencies = storage.beff
+  all_beacons = storage.beacons
+  beacon_queue = storage.queue
   script.on_event( defines.events.on_runtime_mod_setting_changed, function(event) on_settings_changed(event) end )
   script.on_event( defines.events.on_player_fast_transferred,     function(event) check_entity(event.entity) end )
   script.on_event( defines.events.on_entity_settings_pasted,      function(event) check_entity(event.destination) end )
   script.on_event( defines.events.on_selected_entity_changed,     function(event) check_entity(event.last_entity) end )
-  script.on_event( defines.events.on_built_entity,                function(event) beacon_added(event.created_entity) end, {{filter = "type", type = "beacon"}} )
-  script.on_event( defines.events.on_robot_built_entity,          function(event) beacon_added(event.created_entity) end, {{filter = "type", type = "beacon"}} )
+  script.on_event( defines.events.on_built_entity,                function(event) beacon_added(event.entity) end, {{filter = "type", type = "beacon"}} )
+  script.on_event( defines.events.on_robot_built_entity,          function(event) beacon_added(event.entity) end, {{filter = "type", type = "beacon"}} )
   script.on_event( defines.events.script_raised_built,            function(event) beacon_added(event.entity) end, {{filter = "type", type = "beacon"}} )
   script.on_event( defines.events.script_raised_revive,           function(event) beacon_added(event.entity) end, {{filter = "type", type = "beacon"}} )
   script.on_event( defines.events.on_player_mined_entity,         function(event) beacon_removed(event.entity) end, {{filter = "type", type = "beacon"}} )
@@ -189,10 +191,10 @@ function check_beacon(beacon)
   if not beacon.valid then return changed end
   local modules = beacon.get_module_inventory().get_contents()
   local value = 0
-  for module, count in pairs(modules) do
-    local module_bonus = module_power_bonuses[module] or 0
+  for _, module_info in pairs(modules) do
+    local module_bonus = module_power_bonuses[module_info.name] or 0
     if ((bonuses.positive or module_bonus < 0) and (bonuses.negative or module_bonus > 0)) then
-      value = value + module_bonus * count
+      value = value + module_bonus * module_info.count
     end
   end
   if apply_efficiency then value = value * beacon_efficiencies[beacon.name] end
