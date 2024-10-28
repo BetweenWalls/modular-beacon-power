@@ -119,7 +119,7 @@ local max_slots = 0
 local min_eff = 100
 local include_prod_modules = false
 for _, beacon in pairs(data.raw.beacon) do
-    local slots = beacon.module_slots or 0
+    local slots = beacon.module_slots
     if slots > max_slots then max_slots = slots end
     if beacon.distribution_effectivity < min_eff then min_eff = beacon.distribution_effectivity end
     if beacon.allowed_effects then
@@ -141,6 +141,12 @@ for _, module in pairs(data.raw.module) do
             if ((positive_bonuses or bonus < 0) and (negative_bonuses or bonus > 0)) then
                 table.insert(module_powers, bonus)
             end
+            if mods["quality"] and (bonus < 0 and negative_bonuses) then
+                quality_multipliers = {1,1.3,1.6,1.9,2.5} -- TODO: Account for modded quality levels
+                for i=2,#quality_multipliers do
+                    table.insert(module_powers, bonus*quality_multipliers[i])
+                end
+            end
         end
     end
 end
@@ -154,10 +160,10 @@ for slots=2,max_slots do
         table.insert(combos[slots], value)
         for i=1,#module_powers do
             local pvalue = value + module_powers[i]
-            if pvalue * min_eff >= POWER_MINIMUM-1 then
+            --if pvalue * min_eff >= POWER_MINIMUM-1 then -- TODO: What was this needed for? Just an optimization for the pre-2.0 system?
                 if pvalue % 1 ~= 0 then pvalue = (math.floor(math.ceil(pvalue*1000)/10))/100 end -- TODO: why are some values not integers, but extremely close to them instead?
                 if pvalue ~= 0 then table.insert(combos[slots], pvalue) end
-            end
+            --end
         end
         combos[slots] = remove_duplicates(combos[slots])
     end
@@ -196,4 +202,4 @@ for _, info in pairs(new_beacons) do
     if info.description then new_beacon.localised_description = info.description end
     data:extend({new_beacon})
 end
--- TODO: Set a limit for how many entities should be created? If other mods add many beacons and modules, the potential number of combinations can become so great that the game "hangs" when loading (due to insufficient memory, presumably)
+-- TODO: Set a limit for how many entities should be created? If other mods add many beacons/modules/qualities, the potential number of combinations can become so great that the game "hangs" when loading (due to insufficient memory, presumably)

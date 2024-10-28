@@ -1,4 +1,16 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.0.2
+Date: 2024.10.27
+  Changes:
+    - Fixed beacons not being affected by more than one module in some circumstances
+    - Fixed higher-quality beacons being reverted to normal quality
+    - Fixed higher-quality modules using the stats from normal quality
+---------------------------------------------------------------------------------------------------
+Version: 1.0.1
+Date: 2024.10.26
+  Changes:
+    - Fixed crash involving module requests
+---------------------------------------------------------------------------------------------------
 Version: 1.0.0
 Date: 2024.10.22
   Changes:

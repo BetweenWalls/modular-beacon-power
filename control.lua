@@ -194,7 +194,12 @@ function check_beacon(beacon)
   for _, module_info in pairs(modules) do
     local module_bonus = module_power_bonuses[module_info.name] or 0
     if ((bonuses.positive or module_bonus < 0) and (bonuses.negative or module_bonus > 0)) then
-      value = value + module_bonus * module_info.count
+      quality_mult = 1
+      if (module_bonus < 0 and bonuses.negative) then
+        quality_multipliers = {["normal"]=1, ["uncommon"]=1.3, ["rare"]=1.6, ["epic"]=1.9, ["legendary"]=2.5} -- TODO: Account for modded quality levels
+        quality_mult = quality_multipliers[module_info.quality]
+      end
+      value = value + module_bonus * quality_mult * module_info.count
     end
   end
   if apply_efficiency then value = value * beacon_efficiencies[beacon.name] end
@@ -206,6 +211,7 @@ function check_beacon(beacon)
   if all_beacons[beacon.unit_number] and all_beacons[beacon.unit_number].open then return changed end
 	local new_beacon = beacon.surface.create_entity({
 		name = new_name,
+    quality = beacon.quality,
 		position = beacon.position,
 		force = beacon.force_index,
 		create_build_effect_smoke = false,
@@ -237,25 +243,18 @@ function copy_modules(source, target)
     name = "item-request-proxy",
     force = source.force
   })
-  local num_requests = 0
-  local item_requests = {}
   for _, proxy in pairs(request_proxies) do
     if proxy.proxy_target == source then
-      for name, count in pairs(proxy.item_requests) do
-        item_requests[name] = count
-        num_requests = num_requests + 1
-      end
+      target.surface.create_entity({
+        name = "item-request-proxy",
+        position = target.position,
+        force = target.force,
+        target = target,
+        modules = proxy.insert_plan
+      })
     end
   end
-  if num_requests > 0 then
-    target.surface.create_entity({
-      name = "item-request-proxy",
-      position = target.position,
-      force = target.force,
-      target = target,
-      modules = item_requests
-    })
-  end
+  -- TODO: Check empty module slots and rearrange requests as needed to preserve unfulfilled requests - modules get inserted by bots into the first open slot, not necessarily whichever slot originally requested them
 end
 
 --- Returns the "ID" for a beacon name corresponding to the given power consumption value
