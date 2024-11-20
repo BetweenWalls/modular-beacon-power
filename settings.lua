@@ -23,25 +23,33 @@ data:extend ({
     },
     {
         type = "bool-setting",
+        name = "mbp-description-details",
+        setting_type = "startup",
+        default_value = false,
+        order = "a"
+    },
+    {
+        type = "bool-setting",
         name = "mbp-negative-bonuses",
         setting_type = "startup",
         default_value = true,
-        order = "a"
+        order = "b"
     },
     {
         type = "bool-setting",
         name = "mbp-positive-bonuses",
         setting_type = "startup",
         default_value = false,
-        order = "b"
+        order = "c"
     },
     {
         type = "bool-setting",
         name = "mbp-apply-efficiency",
         setting_type = "startup",
         default_value = false,
-        order = "c"
+        order = "d"
     },
+    -- TODO: Add setting which prevents power from being reduced with higher quality beacons
     -- TODO: Add setting which changes negative bonuses (eg. from efficiency modules) to be multiplicative instead of additive?
     -- TODO: Add setting which multiplies negative bonuses by the beacon's total module power? (i.e. beacons with more slots will have more effective efficiency modules)
     {

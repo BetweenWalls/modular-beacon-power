@@ -1,4 +1,17 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.0.4
+Date: 2024.11.19
+  Changes:
+    - Added startup setting to show the power consumption difference from modules as a percentage in beacon descriptions
+    - Added missing event handlers for beacon scripts on space platforms
+    - Added support for custom qualities
+    - Improved support for UnlimitedProductivityFork, rosnok-productivity-quality-beacon
+---------------------------------------------------------------------------------------------------
+Version: 1.0.3
+Date: 2024.11.10
+  Changes:
+    - Added support for Mini Machines and Micro Machines
+---------------------------------------------------------------------------------------------------
 Version: 1.0.2
 Date: 2024.10.27
   Changes:

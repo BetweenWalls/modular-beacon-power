@@ -1,6 +1,7 @@
 ---- control.lua
 
 local DELIMITER = "__MBP"
+local QUALITY_BONUS = 0.3
 local POWER_MINIMUM = 0.2  -- beacons cannot be reduced below this amount of their original power consumption (vanilla uses 0.2 for other machines)
 local apply_efficiency     -- whether effiency affects module effects applied to the beacon itself
 local bonuses              -- positive, negative (booleans for startup settings)
@@ -11,10 +12,11 @@ local beacon_efficiencies  -- beacon prototype name -> beacon distribution effic
 local all_beacons          -- beacon unit number -> entity reference, info
 local beacon_queue         -- ordered list of beacon unit numbers
 local iterator = 1         -- keeps track of current position within beacon_queue
+local quality_multipliers  -- quality name -> quality multiplier
 
 script.on_init(
   function()
-    storage = { mpb = {}, beff = {}, beacons = {}, queue = {} }
+    storage = { mpb = {}, beff = {}, beacons = {}, queue = {}, qm = {} }
     initialize()
     startup()
     check_all_beacons()
@@ -50,6 +52,12 @@ function initialize()
   local info = catalogue_all_beacons()
   storage.beacons = info[1]
   storage.queue = info[2]
+  if not storage.qm then storage.qm = {} end -- for "migration" purposes
+  for name, quality in pairs(prototypes.quality) do
+      if name ~= "quality-unknown" then
+        storage.qm[name] = 1 + QUALITY_BONUS*quality.level
+      end
+  end
 end
 
 --- Loads stored data and starts scripts
@@ -65,6 +73,7 @@ function startup()
   beacon_efficiencies = storage.beff
   all_beacons = storage.beacons
   beacon_queue = storage.queue
+  quality_multipliers = storage.qm
   script.on_event( defines.events.on_runtime_mod_setting_changed, function(event) on_settings_changed(event) end )
   script.on_event( defines.events.on_player_fast_transferred,     function(event) check_entity(event.entity) end )
   script.on_event( defines.events.on_entity_settings_pasted,      function(event) check_entity(event.destination) end )
@@ -72,11 +81,13 @@ function startup()
   script.on_event( defines.events.on_built_entity,                function(event) beacon_added(event.entity) end, {{filter = "type", type = "beacon"}} )
   script.on_event( defines.events.on_robot_built_entity,          function(event) beacon_added(event.entity) end, {{filter = "type", type = "beacon"}} )
   script.on_event( defines.events.script_raised_built,            function(event) beacon_added(event.entity) end, {{filter = "type", type = "beacon"}} )
+  script.on_event( defines.events.on_space_platform_built_entity, function(event) beacon_added(event.entity) end, {{filter = "type", type = "beacon"}} )
   script.on_event( defines.events.script_raised_revive,           function(event) beacon_added(event.entity) end, {{filter = "type", type = "beacon"}} )
   script.on_event( defines.events.on_player_mined_entity,         function(event) beacon_removed(event.entity) end, {{filter = "type", type = "beacon"}} )
   script.on_event( defines.events.on_robot_mined_entity,          function(event) beacon_removed(event.entity) end, {{filter = "type", type = "beacon"}} )
   script.on_event( defines.events.on_entity_died,                 function(event) beacon_removed(event.entity) end, {{filter = "type", type = "beacon"}} )
   script.on_event( defines.events.script_raised_destroy,          function(event) beacon_removed(event.entity) end, {{filter = "type", type = "beacon"}} )
+  script.on_event( defines.events.on_space_platform_mined_entity, function(event) beacon_removed(event.entity) end, {{filter = "type", type = "beacon"}} )
   script.on_event( defines.events.on_gui_opened,                  function(event) beacon_gui(event.entity, true) end )
   script.on_event( defines.events.on_gui_closed,                  function(event) beacon_gui(event.entity, false) end )
   if active_mod then register_periodic_updates(update_rate) end
@@ -196,8 +207,8 @@ function check_beacon(beacon)
     if ((bonuses.positive or module_bonus < 0) and (bonuses.negative or module_bonus > 0)) then
       quality_mult = 1
       if (module_bonus < 0 and bonuses.negative) then
-        quality_multipliers = {["normal"]=1, ["uncommon"]=1.3, ["rare"]=1.6, ["epic"]=1.9, ["legendary"]=2.5} -- TODO: Account for modded quality levels
         quality_mult = quality_multipliers[module_info.quality]
+        if not quality_mult then return changed end
       end
       value = value + module_bonus * quality_mult * module_info.count
     end

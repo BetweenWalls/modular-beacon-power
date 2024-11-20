@@ -1,6 +1,7 @@
 ---- data-final-fixes.lua
 
 local DELIMITER = "__MBP"
+local QUALITY_BONUS = 0.3
 local POWER_MINIMUM = 0.2  -- beacons cannot be reduced below this amount of their original power consumption (vanilla uses 0.2 for other machines)
 local UNIT_MULTIPLIERS = {
     [""] = 1,
@@ -42,6 +43,7 @@ local apply_efficiency = startup["mbp-apply-efficiency"].value
 local skip_beacons = startup["mbp-skip-beacons"].value
 local positive_bonuses = startup["mbp-positive-bonuses"].value
 local negative_bonuses = startup["mbp-negative-bonuses"].value
+local add_descriptions = startup["mbp-description-details"].value
 
 --- Convert an energy string to base unit value + suffix.
 --- Returns `nil` if `energy_string` is incorrectly formatted.
@@ -114,15 +116,25 @@ function is_valid(beacon)
     return true
 end
 
+--- Adds power consumption details (percent difference) to a beacon entity's description
+--- @param beacon data.BeaconPrototype
+function add_to_description(beacon, localised_string)
+	if beacon.localised_description and beacon.localised_description ~= '' then
+		beacon.localised_description = {'', beacon.localised_description, '\n', localised_string}
+		return
+	end
+    beacon.localised_description = {'?', {'', {'entity-description.' .. beacon.name}, '\n', localised_string} }
+end
+
 -- Setup general relevant values: maximum beacon module slots, minimum efficiency of any beacon, whether productivity modules are allowed
 local max_slots = 0
-local min_eff = 100
+--local min_eff = 100
 local include_prod_modules = false
 for _, beacon in pairs(data.raw.beacon) do
     local slots = beacon.module_slots
     if slots > max_slots then max_slots = slots end
-    if beacon.distribution_effectivity < min_eff then min_eff = beacon.distribution_effectivity end
-    if beacon.allowed_effects then
+    --if beacon.distribution_effectivity < min_eff then min_eff = beacon.distribution_effectivity end
+    if beacon.allowed_effects then -- TODO: allowed_effects can be a simple union instead of an array of unions
         local prod_consumption = 0
         for i=1,#beacon.allowed_effects do
             if beacon.allowed_effects[i] == "consumption" or beacon.allowed_effects[i] == "productivity" then prod_consumption = prod_consumption + 1 end
@@ -134,6 +146,12 @@ end
 
 -- Create list of unique power consumption values from individual modules
 local module_powers = {}
+local quality_multipliers = {}
+for _, quality in pairs(data.raw.quality) do
+    if quality.name ~= "quality-unknown" then
+        table.insert(quality_multipliers, 1 + QUALITY_BONUS*quality.level)
+    end
+end
 for _, module in pairs(data.raw.module) do
     if module.effect.consumption and module.effect.consumption ~= 0 then
         if module.effect.productivity == nil or include_prod_modules then
@@ -142,7 +160,6 @@ for _, module in pairs(data.raw.module) do
                 table.insert(module_powers, bonus)
             end
             if mods["quality"] and (bonus < 0 and negative_bonuses) then
-                quality_multipliers = {1,1.3,1.6,1.9,2.5} -- TODO: Account for modded quality levels
                 for i=2,#quality_multipliers do
                     table.insert(module_powers, bonus*quality_multipliers[i])
                 end
@@ -200,6 +217,11 @@ for _, info in pairs(new_beacons) do
     new_beacon.hidden = true
     if info.name then new_beacon.localised_name = info.name end
     if info.description then new_beacon.localised_description = info.description end
+    if add_descriptions then
+        local amount = info.id
+        if tonumber(amount) > 0 then amount = "+"..amount end
+        add_to_description(new_beacon, {"description.mbp_consumption", amount})
+    end
     data:extend({new_beacon})
 end
 -- TODO: Set a limit for how many entities should be created? If other mods add many beacons/modules/qualities, the potential number of combinations can become so great that the game "hangs" when loading (due to insufficient memory, presumably)
