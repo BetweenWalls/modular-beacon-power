@@ -7,8 +7,7 @@ data:extend ({
         setting_type = "startup",
         minimum_value = 0.1,
         maximum_value = 1,
-        default_value = 0.2,
-        forced_value = 0.2, -- sets the minimum power consumption fraction which beacons can be reduced to (vanilla uses 0.2 for other machines)
+        default_value = 0.2, -- sets the minimum power consumption fraction which beacons can be reduced to (vanilla uses 0.2 for other machines)
         hidden = true,
         order = "1"
     },
@@ -25,7 +24,7 @@ data:extend ({
         type = "bool-setting",
         name = "mbp-description-details",
         setting_type = "startup",
-        default_value = false,
+        default_value = true,
         order = "a"
     },
     {
@@ -39,15 +38,24 @@ data:extend ({
         type = "bool-setting",
         name = "mbp-positive-bonuses",
         setting_type = "startup",
-        default_value = false,
+        default_value = true,
         order = "c"
+    },
+    {
+        type = "int-setting",
+        name = "mbp-entity-limit",
+        setting_type = "startup",
+        default_value = 300,
+        minimum_value = 0,
+        maximum_value = 9999,
+        order = "d"
     },
     {
         type = "bool-setting",
         name = "mbp-apply-efficiency",
         setting_type = "startup",
         default_value = false,
-        order = "d"
+        order = "e"
     },
     -- TODO: Add setting which prevents power from being reduced with higher quality beacons
     -- TODO: Add setting which changes negative bonuses (eg. from efficiency modules) to be multiplicative instead of additive?

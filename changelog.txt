@@ -1,4 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.0.5
+Date: 2025.02.21
+  Changes:
+    - Added startup setting to limit the number of entities created. Now, if the game stalls due to low memory, it'll be when
+      loading a map instead of when booting up and the settings will be accessible for adjusting things. Variations are created
+      for beacons starting at those with the lowest module slots - if a beacon's variations can't fit within the entity limit,
+      it won't get any variations and will function normally.
+    - Affected beacons now use "total" for beacon_counter to ensure their variations still have diminishing returns
+    - Changed default startup settings to use both positive and negative bonuses
+---------------------------------------------------------------------------------------------------
 Version: 1.0.4
 Date: 2024.11.19
   Changes:
